@@ -20,22 +20,21 @@ for i in range (0,N):
 arch=open("solucion.dat", "r")
 lineas=arch.readlines()
 v=[]
-print(lineas)
-for i in range(0,len(lineas)):
-    if(lineas[i]=="5"):
+
+for i in lineas:
+    if(float(i)==5):
         V.append(v)
         v=[]
     else:
         
-        v.append(float(lineas[i]))
-        
-
-print(V)
+        v.append(float(i))
 #ax = plt.figure().add_subplot(projection='3d')
 fig, ax2=plt.subplots()
 
 s=0.00001
 h=0
+k=0
+v=V[k]
 for i in range(0, n):
     for j in range(0,n):
         if (v[h]>0):
@@ -47,7 +46,7 @@ for i in range(0, n):
         ax2.quiver(float(i), float(j),0,v[h],color=colorines, units="height", pivot="mid")
         h=h+1
 
-print(v)
+
 #ax.set_zlim(-1,1)
 #ax.set_title("Modelo de Ising Bidimensional con magnetización m="+str(m(v)))
 ax2.set_xlim(-1,n)

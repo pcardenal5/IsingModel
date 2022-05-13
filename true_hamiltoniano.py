@@ -17,7 +17,7 @@ def m(v):
         mag=mag+v[i]
     return mag
 
-n=4
+n=5
 S=[]        #Espin 2d, matrix nxn
 sigma=[]    #Espin 1d, vector n^2
 J=[]        #Matriz de energías de interacción espin-espin
@@ -26,11 +26,11 @@ Q={}        #Diccionario con los términos cuadraticos de Ising.
 b={}        #Diccionario con los términos lineales de Ising
 cQUBO={}    #Diccionario con los coeficientes QUBO
 A=1         #Intensidad de acoplamiento espin-espin
-Ah=0        #Intensidad de acoplamiento espin-campo magnético
+Ah=1        #Intensidad de acoplamiento espin-campo magnético
 var=0       #Varianza de distribución de J. var=0 elimina la distribución y J toma siempre el mismo valor.
 varh=0      #Varianza de distribución de h. var=0 elimina la distribución y J toma siempre el mismo valor.
 OnOff=1     #Controla si se hace o no la simulación en ordenador cuántico.
-ann_time=5 #Tiempo, en microsegundos, que dura cada anneal
+ann_time=20 #Tiempo, en microsegundos, que dura cada anneal
 
 
 
@@ -84,7 +84,7 @@ if __name__=="__main__":
     #Una vez los coeficientes QUBO podemos empezar la simulación del sistema.
     if (OnOff==1):
         bqm=dimod.binary.BinaryQuadraticModel.from_ising(b,Q)
-        sampler = EmbeddingComposite(DWaveSampler())
+        sampler = EmbeddingComposite(DWaveSampler(solver={'topology_type':'chimera'}))
 
         sampleset = sampler.sample(bqm,num_reads=500, annealing_time=ann_time)
 
@@ -95,7 +95,9 @@ if __name__=="__main__":
             v=sampleset.record[i][0]
             for j in range(0,len(v)):
                 arch.write(str(v[j]))
+                arch.write("\n")
             arch.write("5")
+            arch.write("\n")
         arch.close()
         #for i in range(0,len(solucion)):
             #v=sampleset.data(fields=[''])
