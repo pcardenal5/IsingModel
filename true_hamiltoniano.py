@@ -17,7 +17,7 @@ def m(v):
         mag=mag+v[i]
     return mag
 
-n=5
+n=4
 S=[]        #Espin 2d, matrix nxn
 sigma=[]    #Espin 1d, vector n^2
 J=[]        #Matriz de energías de interacción espin-espin
@@ -25,12 +25,13 @@ h=[]        #Vector con energía de campo magnético
 Q={}        #Diccionario con los términos cuadraticos de Ising.
 b={}        #Diccionario con los términos lineales de Ising
 cQUBO={}    #Diccionario con los coeficientes QUBO
-A=1         #Intensidad de acoplamiento espin-espin
-Ah=1        #Intensidad de acoplamiento espin-campo magnético
+A=-1        #Intensidad de acoplamiento espin-espin. <0 favorece espines paralelos y >0 favorece antiparalelos
+Ah=0        #Intensidad de acoplamiento espin-campo magnético
 var=0       #Varianza de distribución de J. var=0 elimina la distribución y J toma siempre el mismo valor.
 varh=0      #Varianza de distribución de h. var=0 elimina la distribución y J toma siempre el mismo valor.
 OnOff=1     #Controla si se hace o no la simulación en ordenador cuántico.
 ann_time=20 #Tiempo, en microsegundos, que dura cada anneal
+beta=0.5     #Parámetro beta, inverso de la temperatura.
 
 
 
@@ -84,11 +85,11 @@ if __name__=="__main__":
     #Una vez los coeficientes QUBO podemos empezar la simulación del sistema.
     if (OnOff==1):
         bqm=dimod.binary.BinaryQuadraticModel.from_ising(b,Q)
-        sampler = EmbeddingComposite(DWaveSampler(solver={'topology_type':'chimera'}))
+        sampler = EmbeddingComposite(DWaveSampler(region="na-west-1", solver={'topology__type': 'chimera'}))
 
-        sampleset = sampler.sample(bqm,num_reads=500, annealing_time=ann_time)
+        sampleset = sampler.sample(bqm,num_reads=500, annealing_time=ann_time, beta = beta)
 
-        #dwave.inspector.show(sampleset)
+        dwave.inspector.show(sampleset)
         #solucion=sampleset.lowest(atol=0.1)
         arch=open("solucion.dat","w")
         for i in range(0,len(sampleset)):
