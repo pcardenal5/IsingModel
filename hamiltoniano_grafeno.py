@@ -1,6 +1,4 @@
 import math
-from functools import partial
-from dwave.embedding.chain_strength import uniform_torque_compensation
 import random
 from dwave.system import DWaveSampler, EmbeddingComposite
 import dimod
@@ -19,14 +17,8 @@ def m(v):
         mag=mag+v[i]
     return mag
 
-def g(x):
-    k=0.3
-    a=(10-2*math.sqrt(2))/(k*(k-2)+1)
-    b=-2*a
-    c=2*math.sqrt(2)+a
-    return a*x*x+b*x+c
-
-n=7
+n=8
+N=n*n
 S=[]        #Espin 2d, matrix nxn
 sigma=[]    #Espin 1d, vector n^2
 J=[]        #Matriz de energías de interacción espin-espin
@@ -38,9 +30,9 @@ A=-1        #Intensidad de acoplamiento espin-espin. <0 favorece espines paralel
 Ah=0        #Intensidad de acoplamiento espin-campo magnético
 var=0       #Varianza de distribución de J. var=0 elimina la distribución y J toma siempre el mismo valor.
 varh=0      #Varianza de distribución de h. var=0 elimina la distribución y J toma siempre el mismo valor.
-OnOff=1     #Controla si se hace o no la simulación en ordenador cuántico.
+OnOff=0     #Controla si se hace o no la simulación en ordenador cuántico.
 ann_time=20 #Tiempo, en microsegundos, que dura cada anneal
-beta=0.3   #Parámetro beta, inverso de la temperatura.
+beta=.3    #Parámetro beta, inverso de la temperatura.
 
 
 
@@ -62,23 +54,13 @@ if __name__=="__main__":
     #Una vez creadas las matrices y vectores es hora de asignar las energías de interacción. Para ello, debemos traducir el sistema de 2D a uno de una
     #única dimension.
     k=0
-    for k in range(0,n**2):
-        h.append(f(Ah,varh))
-        if ((k+1)%n!=0 and k%n!=0):
-            J[(k + 1) % n ** 2][k] = f(A,var)
-            J[(k - 1) % n ** 2][k] = f(A,var)
-            J[k][(k + n) % n ** 2] = f(A,var)
-            J[k][(k - n) % n ** 2] = f(A,var)
-        elif((k+1)%n==0):
-            J[(k + 1-n) % n ** 2][k] = f(A,var)
-            J[(k - 1) % n ** 2][k] = f(A,var)
-            J[k][(k + n) % n ** 2] = f(A,var)
-            J[k][(k - n) % n ** 2] = f(A,var)
-        elif (k%n==0):
-            J[(k + 1) % n ** 2][k] = f(A,var)
-            J[(k - 1 + n) % n ** 2][k] = f(A,var)
-            J[k][(k + n) % n ** 2] = f(A,var)
-            J[k][(k - n) % n ** 2] = f(A,var)
+    for i in range(0, n):
+        #Índice de filas
+        for j in range(0,n):
+            #Índice de columnas
+            J[(k-n)%N][k]=f(A,var)
+            if()
+        k=k+1
     #Para poder usar los coeficientes en la QPU debo transoformar h y J en diccionarios, b y Q respectivamente
     for i in range(0, n**2):
         b[i]=h[i]
@@ -87,22 +69,12 @@ if __name__=="__main__":
                 a=(i,j)
                 Q[a]=J[i][j]
 
-    #Una vez traducidos uso el recurso dimod.ising_to_qubo() para obtener los coeficientes QUBO del sistema.
-    #cQUBO=dimod.ising_to_qubo(b,Q)
-
-
     #Una vez los coeficientes QUBO podemos empezar la simulación del sistema.
     if (OnOff==1):
         bqm=dimod.binary.BinaryQuadraticModel.from_ising(b,Q)
         sampler = EmbeddingComposite(DWaveSampler(region="na-west-1", solver={'topology__type': 'chimera'}))
-        fuerza=uniform_torque_compensation(bqm)
-        print(fuerza)
-        if beta<1:
-            fuerza=g(beta)
-            sampleset = sampler.sample(bqm,num_reads=1000,chain_strength=fuerza, annealing_time=ann_time, beta = beta, postprocess = "sampling")
-        else:
-            sampleset = sampler.sample(bqm,num_reads=1000,annealing_time=ann_time, beta = beta, postprocess = "sampling")
-        
+
+        sampleset = sampler.sample(bqm,num_reads=500,chain_strength=10.0, annealing_time=ann_time, beta = beta, postprocess = "sampling")
 
         dwave.inspector.show(sampleset)
         #solucion=sampleset.lowest(atol=0.1)

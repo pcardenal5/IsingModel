@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import math
 from true_hamiltoniano import m, n
 import random
-import shelve
+
 
 
 N=n*n
