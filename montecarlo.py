@@ -2,7 +2,6 @@
 import math
 import random
 import time
-from parametros import beta, betaf, beta_1, beta_2, beta_step_min, par, par_step
 
 def cambio(E0,E1, beta):
     import math
@@ -54,24 +53,38 @@ def sistema(n):
         S.append(v)
     return S
 
+beta=0.01
 B=[]
 M=[]
 E=[]
 OnOff=0
-random.seed()
 J=1
 N=8
+
+
+random.seed()
+J=1
+N=7
 termal=1000*N
 if termal < 5000:
     termal = 5000
-cont=0
-while beta<beta_2:
+beta=0
+betaf=2
+beta_1=0.001
+beta_2=0.8
+beta_step_min=0.01
+par=-10
+while beta<betaf:
     if(beta<beta_1):
         beta=10**par
-        par=par+par_step
+        par=par+0.5
         num_iter=10000
-    elif (beta>=beta_1):
+    elif (beta>=beta_1 and beta<beta_2):
         beta_step=beta_step_min
+        beta=beta+beta_step
+        num_iter=10000
+    elif (beta>=beta_2):
+        beta_step=10*beta_step_min
         beta=beta+beta_step
         num_iter=10000
     print(beta, time.thread_time())
@@ -83,8 +96,6 @@ while beta<beta_2:
     ENG=0
     for j in range(0, num_iter):
         S=sistema(N)
-        if (j%1000==0):
-            print(j)
         for t in range(0,termal):
             x=int(math.floor(N*random.random()))
             y=int(math.floor(N*random.random()))
@@ -101,40 +112,8 @@ while beta<beta_2:
     print(MAG/num_iter, ENG/num_iter)
     M.append(MAG/num_iter)
     E.append(ENG/num_iter)
-
-while beta<betaf:
-    beta=beta+10*beta_step_min
-    print(beta, time.thread_time())
-    B.append(beta)
-    P=[]
-    P.append(math.exp(-4*J*beta))
-    P.append(-8*J*beta)
-    MAG=0
-    ENG=0
-    for j in range(0, num_iter):
-        if (j%1000==0):
-            print(j)
-            S=sistema(N)
-        for t in range(0,termal):
-            x=int(math.floor(N*random.random()))
-            y=int(math.floor(N*random.random()))
-            dE=2*J*S[x][y]*((S[x][(y+1)%N]+S[x][(y-1)%N]+S[(x+1)%N][y]+S[(x-1)%N][y]))
-            if (dE<=0):
-                S[x][y]=-S[x][y]
-            else:
-                p=P[int(dE/(4*J)-1)]
-                q=random.random()
-                if (q<p):
-                    S[x][y]=-S[x][y]
-        MAG=MAG+abs(mag(S))/(N*N)
-        ENG=ENG+energuia(S,J)/(N*N)
-    print(MAG/num_iter, ENG/num_iter)
-    M.append(MAG/num_iter)
-    E.append(ENG/num_iter)
-Enom="energia"+str(N)+str(betaf)+str(J)+".dat"
-Mnom="magnetizacion"+str(N)+str(betaf)+str(J)+".dat"
-fileE=open(Enom, "w")
-fileM=open(Mnom, "w")
+fileE=open("energia.dat", "w")
+fileM=open("magnetizacion.dat", "w")
 print(len(E),len(M),len(B))
 for b in range(0, len(B)):
     fileE.write(str(B[b])+" "+str(E[b])+"\n")
