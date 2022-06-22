@@ -2,10 +2,11 @@ import math
 import numpy as np
 import random
 import dimod
-from true_hamiltoniano import n, m
+from QA_barrido_cuadrada import m
 
-X=np.loadtxt("solucion.dat", delimiter=" ")
+X=np.loadtxt("QAsolucion71e-071.dat", delimiter=" ")
 
+n=7
 M=0
 total=0
 for i in range(0,len(X)):
