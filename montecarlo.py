@@ -59,7 +59,7 @@ M=[]
 E=[]
 OnOff=0
 random.seed()
-J=1
+J=0.5
 N=8
 termal=1000*N
 if termal < 5000:
